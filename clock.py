@@ -552,16 +552,20 @@ def dummy_state_prep(state):
     output:
     unitary: np.ndarray, shape (2**n, 2**n), the unitary matrix that prepares the state
     """
+    state = state.flatten()
     eye = np.eye(len(state), dtype=np.complex128)
     k = np.zeros(len(state), dtype=np.complex128)
     
     k[0] = 1
-    overlap = k.conj().T@ state/np.abs(k.conj().T@ state)
-    print(overlap)
-    w = overlap*k - state
+    if np.abs(k.conj().T@ state)== 0:
+        phase = 1
+    else:
+        phase = k.conj().T@ state/np.abs(k.conj().T@ state)
+    print(phase)
+    w = phase*k - state
     w = w / np.linalg.norm(w)  # Normalize w
     u = eye - 2 * np.outer(w,w.conj()) # Householder reflection
     print(np.allclose(u@u.conj().T,np.eye(len(state), dtype=np.complex128)))
-    u = overlap * u
+    u = phase * u
     print(np.allclose(u@u.conj().T,np.eye(len(state), dtype=np.complex128)))
     return u # problem
